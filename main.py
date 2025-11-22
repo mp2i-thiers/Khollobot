@@ -278,7 +278,7 @@ async def khôlles_cmd(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed, ephemeral=True, view=select_week())
 
 @tree.command(name="calendrier", description="Créer un fichier ICS de tes colles")
-async def calendar_cmd(interaction: discord.Integration):
+async def calendar_cmd(interaction: discord.Interaction):
     member = data["Members"].get(str(interaction.user.id))
 
     if not member:
