@@ -410,7 +410,7 @@ async def send_reminder_saturday():
         return
     for member in data["Members"]:
         if data["Members"][member]["reminder"] != "True":
-            return
+            continue
         user = await bot.fetch_user(member)
 
         embed = await gen_kholle(user_id = member, semaine=semaine_actuelle()+1,title="Tes kholles pour la semaine prochaine")
@@ -424,7 +424,7 @@ async def send_reminder_saturday():
 async def send_reminder_2days_before():
     for member in data["Members"]:
         if data["Members"][member]["reminder"] != "True":
-            return
+            continue
         user = await bot.fetch_user(member)
         embed = await gen_kholle(user_id = member, semaine=semaine_actuelle(),colour=discord.Colour.red(), custom_char="pour après demain, prépare la bien ! ", delta_day=2, title="Ta kholle pour demain")
         if not embed:
@@ -435,7 +435,7 @@ async def send_reminder_2days_before():
 async def send_reminder_sameday():
     for member in data["Members"]:
         if data["Members"][member]["reminder"] != "True":
-            return
+            continue
         user = await bot.fetch_user(member)
         embed = await gen_kholle(user_id = member, semaine=semaine_actuelle(),colour=discord.Colour.green(), custom_char="pour aujourd'hui, bonne chance ! ", delta_day=0, title="Ta kholle pour aujourd'hui")
         if not embed:
