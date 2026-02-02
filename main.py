@@ -141,10 +141,10 @@ def get_kholles():
                 
                 # Utiliser semaine_kholle pour la clé (S0-S15 ou S16-S31)
                 key_semaine = f"S_{semaine_kholle}"
-                
+                if len(row[7]) == 1 and not row[7].isdecimal():
+                    continue
                 if key_semaine not in khôlles:
                     khôlles[key_semaine] = []
-                
                 kholle_data = {
                     'matiere': row[0],
                     'colleur': row[1],
@@ -153,7 +153,8 @@ def get_kholles():
                     'salle': row[4],
                     'semaine': semaine_kholle,  # S0-S15 ou S16-S31
                     'semaine_iso': semaine_iso,  # Semaine ISO réelle
-                    'group_id': int(row[7]) if row[7].isdecimal() else 0
+                    'group_id': int(row[7]) if row[7].isdecimal() else int(row[7][:-1]),
+                    'user_id' : -97+ord(row[7][-1:]) if not row[7].isdecimal() else None
                 }
                 if kholle_data['group_id'] == 0 :
                     continue
@@ -205,7 +206,7 @@ def kholles_semaines(user_id: int, semaine: int = semaine_actuelle()) -> list:
         key_s2 = f"S_{semaine + 16}"
         if key_s2 in khôlles:
             for kholle in khôlles[key_s2]:
-                if kholle["group_id"] == user_group_id:
+                if kholle["group_id"] == user_group_id or (list(groups[user_group_id]["membres"]).index(user_data["name"])==kholle["user_id"] and kholle["group_id"] == user_group_id):
                     user_khôlles.append(kholle)
     
     user_khôlles = sorted(user_khôlles, key=lambda x: day_to_num.get(x["jour"], 0))
