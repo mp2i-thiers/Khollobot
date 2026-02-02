@@ -475,7 +475,7 @@ async def send_reminder_2days_before():
         if data["Members"][member]["reminder"] != "True":
             continue
         user = await bot.fetch_user(member)
-        embed = await gen_kholle(user_id = member, semaine=semaine_actuelle(),colour=discord.Colour.red(), custom_char="pour après demain, prépare la bien ! ", delta_day=2, title="Ta kholle pour demain")
+        embed = await gen_kholle(user_id = member, semaine=semaine_actuelle(),colour=discord.Colour.red(), custom_char="pour après demain, prépare la bien ! ", delta_day=2, title="Ta kholle pour après demain")
         if not embed:
             continue
         # To send dms, the app needs to be a bot, not just an app.
