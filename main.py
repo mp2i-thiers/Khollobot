@@ -501,8 +501,9 @@ async def send_reminders():
         ]
     print(targets)
     for member in data["Members"]:
-        print(data["Members"][member]["reminder"], type(data["Members"][member]["reminder"]))
-        if data["Members"][member]["reminder"] != "True":
+        reminder = data["Members"][member].get("reminder", "False")
+        print(reminder, type(reminder))
+        if reminder not in ("True", True):
             continue
         user = await bot.fetch_user(member)
 
