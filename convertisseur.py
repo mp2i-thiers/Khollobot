@@ -131,6 +131,63 @@ def get_kholles_format1(filepath):
     return groups, khôlles
 
 
+def get_kholles_format4(filepath):
+    """Convertit le format Créneaux/Groupes de colle."""
+    df1 = pd.read_excel(filepath, sheet_name="Créneaux", header=1)
+    df2 = pd.read_excel(filepath, sheet_name="Groupes de colle", header=None)
+    date_cols = [
+        column for column in df1.columns
+        if isinstance(column, (datetime.datetime, pd.Timestamp))
+    ]
+
+    current_matiere = None
+    for row in df1.to_dict(orient="records"):
+        matiere = row.get("Matière", row.get("Unnamed: 0"))
+        colleur = row.get("Colleur", row.get("Unnamed: 1"))
+        if pd.notna(matiere):
+            current_matiere = matiere
+        if pd.isna(colleur) or not current_matiere:
+            continue
+
+        for index, date_col in enumerate(date_cols):
+            group_id = row.get(date_col)
+            if pd.isna(group_id) or group_id in ["p", "P", "i", "I"]:
+                continue
+            try:
+                group_id = int(group_id)
+            except (TypeError, ValueError):
+                continue
+
+            semaine_iso = date_col.isocalendar()[1]
+            khôlles.setdefault(f"S_{index}", []).append({
+                "group_id": group_id,
+                "matiere": current_matiere,
+                "colleur": colleur,
+                "jour": row.get("Jour", row.get("Unnamed: 2")) if pd.notna(row.get("Jour", row.get("Unnamed: 2"))) else "",
+                "heure": row.get("Heure", row.get("Unnamed: 3")) if pd.notna(row.get("Heure", row.get("Unnamed: 3"))) else "",
+                "semaine": index,
+                "semaine_iso": semaine_iso,
+                "salle": row["Salle"] if pd.notna(row["Salle"]) else "",
+                "note": ""
+            })
+
+    for row in df2.itertuples(index=False, name=None):
+        if not row or pd.isna(row[0]):
+            continue
+        try:
+            group_id = int(row[0])
+        except (TypeError, ValueError):
+            continue
+        groups.append({
+            "group_id": group_id,
+            "eleve1": "" if len(row) < 2 or pd.isna(row[1]) else str(row[1]).strip(),
+            "eleve2": "" if len(row) < 3 or pd.isna(row[2]) else str(row[2]).strip(),
+            "eleve3": "" if len(row) < 4 or pd.isna(row[3]) else str(row[3]).strip()
+        })
+
+    return groups, khôlles
+
+
 def get_kholles_format2(filepath):
     """Convertit le format 2 (Semaines + Groupes avec dates)"""
     df1 = pd.read_excel(filepath, sheet_name='Semaines')
@@ -275,6 +332,8 @@ def detect_format(filepath):
     
     if 'Collomètre' in sheet_names:
         return 'format1'
+    if 'Créneaux' in sheet_names and 'Groupes de colle' in sheet_names:
+        return 'format4'
     if 'Semaines' in sheet_names and ('Feuille 2' in sheet_names or 'Feuille2' in sheet_names):
         return 'format3'
     # Yes it is hardcodded, but i'll add any other format
@@ -324,6 +383,8 @@ def convert_collometre(input_file):
     
     if format_type == 'format1':
         groups_data, kholles_data = get_kholles_format1(input_file)
+    elif format_type == 'format4':
+        groups_data, kholles_data = get_kholles_format4(input_file)
     elif format_type == 'format3':
         groups_data, kholles_data = get_kholles_format3(input_file)
     else:
